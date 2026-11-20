@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevFest Warsaw 2026 — Multi-Voice Presenter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050a14;
+      --bg-card: rgba(11, 18, 33, 0.9);
+      --bg-card-inner: #080f1d;
+      --border: #1b2a44;
+      --border-strong: #2c4166;
+      --text: #f1f5f9;
+      --text-muted: #8fa3bf;
+      --blue: #4285f4;
+      --blue-hover: #3374e0;
+      --green: #4ade80;
+      --google-green: #34a853;
+      --yellow: #fbbc04;
+      --red: #ea4335;
+      --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 45% at 80% 95%, rgba(52, 168, 83, 0.14), transparent 70%),
+        radial-gradient(ellipse 50% 40% at 15% 15%, rgba(66, 133, 244, 0.12), transparent 70%),
+        linear-gradient(125deg, transparent 48%, rgba(74, 222, 128, 0.04) 50%, transparent 52%);
+    }
+
+    /* Top navbar matching warsaw.devfest.pl */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(5, 10, 20, 0.82);
+      border-bottom: 1px solid rgba(27, 42, 68, 0.7);
+    }
+
+    .topbar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+    }
+
+    .gdg-icon {
+      width: 28px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .file-status {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .file-status.loaded {
+      color: var(--green);
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 2.5rem;
+    }
+
+    /* Compact DevFest Hero Banner */
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .hero-eyebrow span {
+      color: var(--green);
+    }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.8vw, 2.05rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .year-pill {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.22rem 0.75rem;
+      border: 1px solid rgba(241, 245, 249, 0.55);
+      border-radius: 999px;
+      color: #f8fafc;
+    }
+
+    .hero-subtitle {
+      margin: 0.35rem 0 0;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      color: var(--green);
+    }
+
+    .google-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 34px);
+      gap: 6px;
+      align-self: center;
+    }
+
+    .google-bars span {
+      height: 3px;
+      border-radius: 999px;
+    }
+
+    .bar-blue { background: var(--blue); }
+    .bar-green { background: var(--google-green); }
+    .bar-yellow { background: var(--yellow); }
+    .bar-red { background: var(--red); }
+
+    /* Terminal-styled cards matching devfest-status.sh */
+    .terminal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 25, 45, 0.65);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-dots {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red { background: var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-green { background: var(--google-green); }
+
+    .terminal-title {
+      margin-left: 0.55rem;
+      color: #94a3b8;
+    }
+
+    .stage {
+      min-height: 440px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background: var(--bg-card-inner);
+    }
+
+    .stage img {
+      max-width: 100%;
+      max-height: 60vh;
+      border-radius: 6px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      display: none;
+    }
+
+    .placeholder {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .placeholder .cmd {
+      color: var(--green);
+    }
+
+    /* Controls bar */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.62rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #ffffff;
+      border: 1px solid var(--blue);
+      box-shadow: 0 0 20px rgba(66, 133, 244, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--blue-hover);
+      border-color: var(--blue-hover);
+    }
+
+    .btn-outline {
+      background: rgba(11, 18, 33, 0.75);
+      color: #cbd5e1;
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .counter {
+      min-width: 88px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      font-variant-numeric: tabular-nums;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(11, 18, 33, 0.85);
+    }
+
+    /* Output terminal panel */
+    .output-card {
+      margin-top: 1.15rem;
+    }
+
+    .output-body {
+      padding: 1rem 1.25rem;
+      background: var(--bg-card-inner);
+    }
+
+    .prompt-line {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .prompt-line .dollar {
+      color: var(--green);
+      margin-right: 0.4rem;
+    }
+
+    #audio-player {
+      width: 100%;
+      margin-top: 0.6rem;
+      display: none;
+      border-radius: 8px;
+      color-scheme: dark;
+    }
+
+    .log-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      min-height: 2.5rem;
+    }
+
+    .log-line {
+      color: #cbd5e1;
+    }
+
+    .log-line .tag-send {
+      color: var(--blue);
+      margin-right: 0.45rem;
+    }
+
+    .log-line .tag-ok {
+      color: var(--green);
+      margin-right: 0.45rem;
+    }
+
+    .log-line .tag-err {
+      color: var(--red);
+      margin-right: 0.45rem;
+    }
+
+    .log-line .hl-model {
+      color: #93c5fd;
+      font-weight: 600;
+    }
+
+    .log-line .hl-time {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .json-block {
+      margin: 0.25rem 0 0.4rem 1.1rem;
+      padding: 0.85rem 1rem;
+      background: #050a14;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+    }
+
+    .audio-wrap {
+      margin: 0.25rem 0 0.2rem 1.1rem;
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="gdg-icon" viewBox="0 0 44 26" fill="none" aria-hidden="true">
+          <path d="M16.5 3.5L6 13L16.5 22.5" stroke="#EA4335" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6 13L16.5 22.5" stroke="#4285F4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M27.5 3.5L38 13L27.5 22.5" stroke="#34A853" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M38 13L27.5 22.5" stroke="#FBBC04" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>GDG WARSAW</span>
+      </div>
+      <div class="nav-right">
+        <span id="file-label" class="file-status">status: no_deck_loaded</span>
+        <input id="pdf-input" type="file" accept="application/pdf,.pdf" hidden />
+        <button id="upload-btn" class="btn btn-primary" type="button">Attach Presentation (PDF)</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="hero-eyebrow"><span>&gt;</span> devfest.init --warsaw</div>
+        <div class="hero-title-row">
+          <h1>DevFest Warsaw Demo</h1>
+          <span class="year-pill">2026</span>
+        </div>
+        <p class="hero-subtitle">Multi-Voice Slide Presenter</p>
+      </div>
+      <div class="google-bars" aria-hidden="true">
+        <span class="bar-blue"></span>
+        <span class="bar-green"></span>
+        <span class="bar-yellow"></span>
+        <span class="bar-red"></span>
+      </div>
+    </section>
+
+    <section class="terminal-card">
+      <div class="terminal-bar">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">slide-stage.sh</span>
+        </div>
+        <span id="stage-meta">mode: ready</span>
+      </div>
+      <div class="stage">
+        <img id="slide-img" alt="Slide preview" />
+        <div id="placeholder" class="placeholder">
+          <div><span class="cmd">$</span> ./attach-presentation --pdf</div>
+          <div>Attach a PDF deck to load slides.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <div class="nav-group">
+        <button id="prev-btn" class="btn btn-outline" type="button" disabled>← Previous</button>
+        <span id="counter" class="counter">00 / 00</span>
+        <button id="next-btn" class="btn btn-outline" type="button" disabled>Next →</button>
+      </div>
+      <div class="nav-group">
+        <button id="describe-btn" class="btn btn-primary" type="button" disabled>Present Slide (Fillers &amp; Tags)</button>
+        <button id="describe-plain-btn" class="btn btn-outline" type="button" disabled>Present Slide (Plain)</button>
+      </div>
+    </div>
+
+    <section class="terminal-card output-card">
+      <div class="terminal-bar">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">presenter-output.json</span>
+        </div>
+        <span>gemini + multi-voice tts</span>
+      </div>
+      <div class="output-body">
+        <div class="prompt-line"><span class="dollar">$</span><span id="cmd-status">./present --waiting</span></div>
+        <div id="log-stream" class="log-stream">
+          <div class="muted">Slide dialogue &amp; execution logs will appear here.</div>
+        </div>
+        <audio id="audio-player" controls></audio>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const pdfInput = document.getElementById("pdf-input");
+    const uploadBtn = document.getElementById("upload-btn");
+    const fileLabel = document.getElementById("file-label");
+    const stageMeta = document.getElementById("stage-meta");
+    const cmdStatus = document.getElementById("cmd-status");
+    const slideImg = document.getElementById("slide-img");
+    const placeholder = document.getElementById("placeholder");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const counter = document.getElementById("counter");
+    const describeBtn = document.getElementById("describe-btn");
+    const describePlainBtn = document.getElementById("describe-plain-btn");
+    const audioPlayer = document.getElementById("audio-player");
+    const logStream = document.getElementById("log-stream");
+
+    let totalSlides = 0;
+    let currentIndex = 0;
+    let uploadVersion = 0;
+    let activeController = null;
+
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function resetAudio() {
+      audioPlayer.pause();
+      audioPlayer.removeAttribute("src");
+      audioPlayer.style.display = "none";
+      document.querySelector(".output-body").appendChild(audioPlayer);
+    }
+
+    function setIdleMessage(msg) {
+      logStream.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "muted";
+      div.textContent = msg;
+      logStream.appendChild(div);
+    }
+
+    function appendLogLine(tagClass, tagText, parts) {
+      const line = document.createElement("div");
+      line.className = "log-line";
+      const tag = document.createElement("span");
+      tag.className = tagClass;
+      tag.textContent = tagText;
+      line.appendChild(tag);
+
+      for (const part of parts) {
+        if (typeof part === "string") {
+          line.appendChild(document.createTextNode(part));
+        } else {
+          const span = document.createElement("span");
+          span.className = part.cls;
+          span.textContent = part.text;
+          line.appendChild(span);
+        }
+      }
+      logStream.appendChild(line);
+    }
+
+    function appendJsonBlock(rawText) {
+      const pre = document.createElement("pre");
+      pre.className = "json-block";
+      try {
+        pre.textContent = JSON.stringify(JSON.parse(rawText), null, 2);
+      } catch {
+        pre.textContent = rawText;
+      }
+      logStream.appendChild(pre);
+    }
+
+    function updateView() {
+      if (activeController) {
+        activeController.abort();
+        activeController = null;
+      }
+      resetAudio();
+
+      if (totalSlides === 0) {
+        slideImg.style.display = "none";
+        placeholder.style.display = "block";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        describeBtn.disabled = true;
+        describePlainBtn.disabled = true;
+        counter.textContent = "00 / 00";
+        stageMeta.textContent = "mode: ready";
+        cmdStatus.textContent = "./present --waiting";
+        setIdleMessage("Slide dialogue & execution logs will appear here.");
+        return;
+      }
+
+      slideImg.src = `/api/slides/${currentIndex}?v=${uploadVersion}`;
+      slideImg.style.display = "block";
+      placeholder.style.display = "none";
+      counter.textContent = `${pad(currentIndex + 1)} / ${pad(totalSlides)}`;
+      stageMeta.textContent = `slide: ${pad(currentIndex + 1)} of ${pad(totalSlides)}`;
+      cmdStatus.textContent = `./present --slide ${pad(currentIndex + 1)}`;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === totalSlides - 1;
+      describeBtn.disabled = false;
+      describePlainBtn.disabled = false;
+      setIdleMessage("Choose 'Present Slide (Fillers & Tags)' or 'Present Slide (Plain)' to compare.");
+    }
+
+    uploadBtn.addEventListener("click", () => pdfInput.click());
+
+    pdfInput.addEventListener("change", async () => {
+      const file = pdfInput.files[0];
+      if (!file) return;
+
+      uploadBtn.disabled = true;
+      fileLabel.classList.remove("loaded");
+      fileLabel.textContent = `converting: ${file.name}...`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Upload failed");
+
+        totalSlides = data.count;
+        currentIndex = 0;
+        uploadVersion += 1;
+        fileLabel.classList.add("loaded");
+        fileLabel.textContent = `${data.filename} (${totalSlides} slides)`;
+        updateView();
+      } catch (err) {
+        fileLabel.classList.remove("loaded");
+        fileLabel.textContent = `error: ${err.message}`;
+      } finally {
+        uploadBtn.disabled = false;
+        pdfInput.value = "";
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentIndex > 0) {
+        currentIndex -= 1;
+        updateView();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentIndex < totalSlides - 1) {
+        currentIndex += 1;
+        updateView();
+      }
+    });
+
+    function handleStreamEvent(ev) {
+      if (ev.type === "llm_start") {
+        appendLogLine("tag-send", ">", [
+          "sending request to describe the slide to ",
+          { cls: "hl-model", text: ev.model },
+          ev.mode ? ` [${ev.mode}]` : "",
+          "...",
+        ]);
+      } else if (ev.type === "llm_done") {
+        appendLogLine("tag-ok", "✓", [
+          "got the response in ",
+          { cls: "hl-time", text: `${ev.elapsed.toFixed(2)}s` },
+        ]);
+        appendJsonBlock(ev.raw_text || "");
+      } else if (ev.type === "tts_start") {
+        appendLogLine("tag-send", ">", [
+          "sending request to ",
+          { cls: "hl-model", text: ev.model },
+          ev.mode ? ` [${ev.mode}]` : "",
+          "...",
+        ]);
+      } else if (ev.type === "tts_done") {
+        appendLogLine("tag-ok", "✓", [
+          "got response in ",
+          { cls: "hl-time", text: `${ev.elapsed.toFixed(2)}s` },
+          ev.bytes ? ` (${(ev.bytes / 1024).toFixed(1)} KB)` : "",
+        ]);
+        if (ev.audio_b64) {
+          const wrap = document.createElement("div");
+          wrap.className = "audio-wrap";
+          audioPlayer.src = `data:${ev.audio_mime};base64,${ev.audio_b64}`;
+          audioPlayer.style.display = "block";
+          wrap.appendChild(audioPlayer);
+          logStream.appendChild(wrap);
+          audioPlayer.play().catch(() => {});
+        }
+      } else if (ev.type === "error") {
+        appendLogLine("tag-err", "✗", [ev.detail || "Unknown error"]);
+        cmdStatus.textContent = `./present --slide ${pad(currentIndex + 1)} --error`;
+      }
+    }
+
+    async function presentSlide(fillers) {
+      if (totalSlides === 0) return;
+      if (activeController) activeController.abort();
+      activeController = new AbortController();
+
+      describeBtn.disabled = true;
+      describePlainBtn.disabled = true;
+      resetAudio();
+      logStream.innerHTML = "";
+      const flag = fillers ? "--fillers" : "--plain";
+      cmdStatus.textContent = `./present --slide ${pad(currentIndex + 1)} ${flag} --running`;
+
+      let hadError = false;
+      try {
+        const res = await fetch(`/api/slides/${currentIndex}/describe?fillers=${fillers}`, {
+          method: "POST",
+          signal: activeController.signal,
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `HTTP ${res.status}`);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            const ev = JSON.parse(trimmed);
+            if (ev.type === "error") hadError = true;
+            handleStreamEvent(ev);
+          }
+        }
+        if (buffer.trim()) {
+          const ev = JSON.parse(buffer.trim());
+          if (ev.type === "error") hadError = true;
+          handleStreamEvent(ev);
+        }
+
+        if (!hadError) {
+          cmdStatus.textContent = `./present --slide ${pad(currentIndex + 1)} ${flag} --done`;
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          cmdStatus.textContent = `./present --slide ${pad(currentIndex + 1)} ${flag} --error`;
+          appendLogLine("tag-err", "✗", [err.message]);
+        }
+      } finally {
+        activeController = null;
+        describeBtn.disabled = false;
+        describePlainBtn.disabled = false;
+      }
+    }
+
+    describeBtn.addEventListener("click", () => presentSlide(true));
+    describePlainBtn.addEventListener("click", () => presentSlide(false));
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && !prevBtn.disabled) prevBtn.click();
+      if (e.key === "ArrowRight" && !nextBtn.disabled) nextBtn.click();
+    });
+  </script>
+</body>
+</html>

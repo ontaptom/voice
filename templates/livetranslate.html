@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevFest Warsaw 2026 — Live Translate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050a14;
+      --bg-card: rgba(11, 18, 33, 0.9);
+      --bg-card-inner: #080f1d;
+      --border: #1b2a44;
+      --border-strong: #2c4166;
+      --text: #f1f5f9;
+      --text-muted: #8fa3bf;
+      --blue: #4285f4;
+      --blue-hover: #3374e0;
+      --green: #4ade80;
+      --google-green: #34a853;
+      --yellow: #fbbc04;
+      --red: #ea4335;
+      --red-hover: #d33426;
+      --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 45% at 80% 95%, rgba(52, 168, 83, 0.14), transparent 70%),
+        radial-gradient(ellipse 50% 40% at 15% 15%, rgba(66, 133, 244, 0.12), transparent 70%),
+        linear-gradient(125deg, transparent 48%, rgba(74, 222, 128, 0.04) 50%, transparent 52%);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(5, 10, 20, 0.82);
+      border-bottom: 1px solid rgba(27, 42, 68, 0.7);
+    }
+
+    .topbar-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+    }
+
+    .gdg-icon {
+      width: 28px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .status-pill {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .status-pill.live {
+      color: var(--green);
+    }
+
+    .status-pill.live .status-dot {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 2.5rem;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .hero-eyebrow span {
+      color: var(--green);
+    }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.8vw, 2.05rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .year-pill {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.22rem 0.75rem;
+      border: 1px solid rgba(241, 245, 249, 0.55);
+      border-radius: 999px;
+      color: #f8fafc;
+    }
+
+    .hero-subtitle {
+      margin: 0.35rem 0 0;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      color: var(--green);
+    }
+
+    .google-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 34px);
+      gap: 6px;
+      align-self: center;
+    }
+
+    .google-bars span {
+      height: 3px;
+      border-radius: 999px;
+    }
+
+    .bar-blue { background: var(--blue); }
+    .bar-green { background: var(--google-green); }
+    .bar-yellow { background: var(--yellow); }
+    .bar-red { background: var(--red); }
+
+    .terminal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 25, 45, 0.65);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-dots {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red { background: var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-green { background: var(--google-green); }
+
+    .terminal-title {
+      margin-left: 0.55rem;
+      color: #94a3b8;
+    }
+
+    .config-body {
+      padding: 1.25rem;
+      background: var(--bg-card-inner);
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+    }
+
+    .config-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .field-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .lang-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .lang-btn {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.48rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(11, 18, 33, 0.8);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .lang-btn:hover {
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .lang-btn.active {
+      background: rgba(66, 133, 244, 0.18);
+      border-color: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(66, 133, 244, 0.25);
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+      user-select: none;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+
+    .toggle-wrap input {
+      accent-color: var(--google-green);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid rgba(27, 42, 68, 0.7);
+    }
+
+    .action-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.68rem 1.4rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #ffffff;
+      border: 1px solid var(--blue);
+      box-shadow: 0 0 22px rgba(66, 133, 244, 0.28);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--blue-hover);
+      border-color: var(--blue-hover);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: #ffffff;
+      border: 1px solid var(--red);
+      box-shadow: 0 0 22px rgba(234, 67, 53, 0.28);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--red-hover);
+      border-color: var(--red-hover);
+    }
+
+    .btn-outline {
+      background: rgba(11, 18, 33, 0.75);
+      color: #cbd5e1;
+      border: 1px solid var(--border-strong);
+      padding: 0.48rem 1rem;
+      font-size: 0.74rem;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .meter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .meter-track {
+      width: 140px;
+      height: 8px;
+      border-radius: 999px;
+      background: #0f1a2e;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      transition: width 0.06s linear;
+    }
+
+    .transcript-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.15rem;
+      margin-top: 1.15rem;
+    }
+
+    .transcript-grid.hidden {
+      display: none;
+    }
+
+    @media (max-width: 780px) {
+      .transcript-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .transcript-body {
+      padding: 1rem 1.2rem;
+      background: var(--bg-card-inner);
+      min-height: 240px;
+      max-height: 360px;
+      overflow-y: auto;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.65;
+      color: #f1f5f9;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.16rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      color: #cbd5e1;
+      text-transform: uppercase;
+    }
+
+    .badge-green {
+      border-color: rgba(74, 222, 128, 0.45);
+      color: var(--green);
+    }
+
+    .badge-blue {
+      border-color: rgba(66, 133, 244, 0.5);
+      color: #93c5fd;
+    }
+
+    .log-card {
+      margin-top: 1.15rem;
+    }
+
+    .log-body {
+      padding: 0.9rem 1.2rem;
+      background: var(--bg-card-inner);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      max-height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .log-line { color: #cbd5e1; }
+    .log-ok { color: var(--green); }
+    .log-send { color: #93c5fd; }
+    .log-err { color: var(--red); }
+    .muted { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="gdg-icon" viewBox="0 0 44 26" fill="none" aria-hidden="true">
+          <path d="M16.5 3.5L6 13L16.5 22.5" stroke="#EA4335" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6 13L16.5 22.5" stroke="#4285F4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M27.5 3.5L38 13L27.5 22.5" stroke="#34A853" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M38 13L27.5 22.5" stroke="#FBBC04" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>GDG WARSAW</span>
+      </div>
+      <div id="status-pill" class="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">status: idle</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="hero-eyebrow"><span>&gt;</span> devfest.init --warsaw</div>
+        <div class="hero-title-row">
+          <h1>DevFest Warsaw Demo</h1>
+          <span class="year-pill">2026</span>
+        </div>
+        <p class="hero-subtitle">Live Speech-to-Speech Interpreter</p>
+      </div>
+      <div class="google-bars" aria-hidden="true">
+        <span class="bar-blue"></span>
+        <span class="bar-green"></span>
+        <span class="bar-yellow"></span>
+        <span class="bar-red"></span>
+      </div>
+    </section>
+
+    <section class="terminal-card">
+      <div class="terminal-bar">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">live-translate.sh</span>
+        </div>
+        <span>input: auto-detect (16kHz PCM) → output: 24kHz PCM</span>
+      </div>
+
+      <div class="config-body">
+        <div class="config-row">
+          <div class="field-group">
+            <span class="field-label">Target Output Language</span>
+            <div class="lang-pills" id="lang-pills">
+              <button class="lang-btn active" type="button" data-lang="en">EN · English</button>
+              <button class="lang-btn" type="button" data-lang="pl">PL · Polish</button>
+              <button class="lang-btn" type="button" data-lang="de">DE · German</button>
+              <button class="lang-btn" type="button" data-lang="fr">FR · French</button>
+              <button class="lang-btn" type="button" data-lang="uk">UK · Ukrainian</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Transcripts</span>
+            <label class="toggle-wrap">
+              <input id="dual-toggle" type="checkbox" checked />
+              <span>Dual transcripts (Input + Output)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <div class="action-left">
+            <button id="toggle-btn" class="btn btn-primary" type="button">Start Live Translate</button>
+            <button id="clear-btn" class="btn btn-outline" type="button">Clear Text</button>
+          </div>
+
+          <div class="meter-group">
+            <span>MIC</span>
+            <div class="meter-track"><div id="mic-fill" class="meter-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="transcript-grid" class="transcript-grid">
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">input-transcript.log</span>
+          </div>
+          <span id="input-lang-badge" class="badge badge-blue">detected: auto</span>
+        </div>
+        <div id="input-transcript" class="transcript-body muted">Speak into your mic to see the detected input transcript...</div>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">output-transcript.log</span>
+          </div>
+          <span id="output-lang-badge" class="badge badge-green">target: EN</span>
+        </div>
+        <div id="output-transcript" class="transcript-body muted">Translated output transcript will appear here...</div>
+      </div>
+    </section>
+
+    <section class="terminal-card log-card">
+      <div class="terminal-bar">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">session-events.log</span>
+        </div>
+        <span>gemini-3.5-live-translate-preview</span>
+      </div>
+      <div id="log-body" class="log-body">
+        <div class="log-line muted">$ ./live-translate --ready (tip: use headphones to avoid feedback)</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const langPills = document.getElementById("lang-pills");
+    const dualToggle = document.getElementById("dual-toggle");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const clearBtn = document.getElementById("clear-btn");
+    const micFill = document.getElementById("mic-fill");
+    const statusPill = document.getElementById("status-pill");
+    const statusText = document.getElementById("status-text");
+    const transcriptGrid = document.getElementById("transcript-grid");
+    const inputTranscriptEl = document.getElementById("input-transcript");
+    const outputTranscriptEl = document.getElementById("output-transcript");
+    const inputLangBadge = document.getElementById("input-lang-badge");
+    const outputLangBadge = document.getElementById("output-lang-badge");
+    const logBody = document.getElementById("log-body");
+
+    let selectedLang = "en";
+    let isRunning = false;
+    let ws = null;
+    let mediaStream = null;
+    let captureCtx = null;
+    let workletNode = null;
+    let playCtx = null;
+    let nextPlayTime = 0;
+    let activeSources = [];
+
+    let inputText = "";
+    let outputText = "";
+
+    function addLog(text, cls = "") {
+      const line = document.createElement("div");
+      line.className = `log-line ${cls}`.trim();
+      line.textContent = text;
+      logBody.appendChild(line);
+      logBody.scrollTop = logBody.scrollHeight;
+    }
+
+    function clearTranscripts() {
+      inputText = "";
+      outputText = "";
+      inputLangBadge.textContent = "detected: auto";
+      outputLangBadge.textContent = `target: ${selectedLang.toUpperCase()}`;
+      inputTranscriptEl.classList.add("muted");
+      outputTranscriptEl.classList.add("muted");
+      inputTranscriptEl.textContent = "Speak into your mic to see the detected input transcript...";
+      outputTranscriptEl.textContent = "Translated output transcript will appear here...";
+    }
+
+    function setUiRunning(running) {
+      isRunning = running;
+      toggleBtn.textContent = running ? "Stop Live Translate" : "Start Live Translate";
+      toggleBtn.className = running ? "btn btn-danger" : "btn btn-primary";
+      statusPill.classList.toggle("live", running);
+      statusText.textContent = running
+        ? `status: live → ${selectedLang.toUpperCase()}`
+        : "status: idle";
+      if (!running) {
+        micFill.style.width = "0%";
+      }
+    }
+
+    function updateTranscriptVisibility() {
+      transcriptGrid.classList.toggle("hidden", !dualToggle.checked);
+    }
+
+    langPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".lang-btn");
+      if (!btn) return;
+      const nextLang = btn.dataset.lang;
+      if (nextLang === selectedLang) return;
+
+      for (const el of langPills.querySelectorAll(".lang-btn")) {
+        el.classList.toggle("active", el === btn);
+      }
+      selectedLang = nextLang;
+      outputLangBadge.textContent = `target: ${selectedLang.toUpperCase()}`;
+
+      if (isRunning) {
+        addLog(`> switching target language to ${selectedLang.toUpperCase()} (reconnecting)...`, "log-send");
+        stopSession().then(() => startSession());
+      }
+    });
+
+    dualToggle.addEventListener("change", () => {
+      updateTranscriptVisibility();
+      if (isRunning) {
+        addLog(
+          `> dual transcripts ${dualToggle.checked ? "enabled" : "disabled"} (reconnecting)...`,
+          "log-send"
+        );
+        stopSession().then(() => startSession());
+      }
+    });
+
+    clearBtn.addEventListener("click", clearTranscripts);
+
+    function playPcm24k(arrayBuffer) {
+      if (!playCtx) return;
+      const int16 = new Int16Array(arrayBuffer);
+      if (int16.length === 0) return;
+
+      const float32 = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) {
+        float32[i] = int16[i] / 32768;
+      }
+
+      const audioBuffer = playCtx.createBuffer(1, float32.length, 24000);
+      audioBuffer.copyToChannel(float32, 0);
+
+      const source = playCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(playCtx.destination);
+
+      const now = playCtx.currentTime;
+      if (nextPlayTime < now) {
+        nextPlayTime = now + 0.02;
+      }
+      source.start(nextPlayTime);
+      nextPlayTime += audioBuffer.duration;
+
+      activeSources.push(source);
+      source.onended = () => {
+        activeSources = activeSources.filter((s) => s !== source);
+      };
+    }
+
+    function stopPlayback() {
+      for (const s of activeSources) {
+        try { s.stop(); } catch {}
+      }
+      activeSources = [];
+      nextPlayTime = 0;
+    }
+
+    // Inline AudioWorklet that resamples any browser sample rate to 16 kHz Int16 PCM (~100ms chunks)
+    const WORKLET_CODE = `
+      class Pcm16Downsampler extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.targetRate = 16000;
+          this.ratio = sampleRate / this.targetRate;
+          this.chunkSamples = 1600; // 100ms at 16 kHz
+          this.outBuf = new Int16Array(this.chunkSamples);
+          this.outIdx = 0;
+          this.pos = 0;
+          this.prevSample = 0;
+        }
+
+        process(inputs) {
+          const input = inputs[0];
+          if (!input || !input[0] || input[0].length === 0) return true;
+          const ch = input[0];
+
+          let peak = 0;
+          for (let i = 0; i < ch.length; i++) {
+            const a = Math.abs(ch[i]);
+            if (a > peak) peak = a;
+          }
+
+          while (this.pos < ch.length) {
+            const idx = Math.floor(this.pos);
+            const frac = this.pos - idx;
+            const s0 = idx === 0 ? this.prevSample : ch[idx - 1];
+            const s1 = ch[idx];
+            const sample = s0 + (s1 - s0) * frac;
+            const clamped = Math.max(-1, Math.min(1, sample));
+            this.outBuf[this.outIdx++] = clamped < 0 ? clamped * 32768 : clamped * 32767;
+            this.pos += this.ratio;
+
+            if (this.outIdx >= this.chunkSamples) {
+              const copy = this.outBuf.slice();
+              this.port.postMessage({ pcm: copy.buffer, peak }, [copy.buffer]);
+              this.outIdx = 0;
+            }
+          }
+
+          this.pos -= ch.length;
+          this.prevSample = ch[ch.length - 1];
+          return true;
+        }
+      }
+      registerProcessor("pcm16-downsampler", Pcm16Downsampler);
+    `;
+
+    async function startSession() {
+      if (isRunning) return;
+      toggleBtn.disabled = true;
+
+      try {
+        addLog(
+          `> connecting to /ws/translate (target=${selectedLang.toUpperCase()}, dual_transcripts=${dualToggle.checked})...`,
+          "log-send"
+        );
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+
+        captureCtx = new AudioContext();
+        playCtx = new AudioContext();
+        await captureCtx.resume();
+        await playCtx.resume();
+        nextPlayTime = 0;
+
+        const workletBlob = new Blob([WORKLET_CODE], { type: "application/javascript" });
+        const workletUrl = URL.createObjectURL(workletBlob);
+        await captureCtx.audioWorklet.addModule(workletUrl);
+        URL.revokeObjectURL(workletUrl);
+
+        const proto = location.protocol === "https:" ? "wss" : "ws";
+        const wsUrl = `${proto}://${location.host}/ws/translate?target=${encodeURIComponent(selectedLang)}&transcripts=${dualToggle.checked}`;
+        ws = new WebSocket(wsUrl);
+        ws.binaryType = "arraybuffer";
+
+        ws.onopen = () => {
+          const source = captureCtx.createMediaStreamSource(mediaStream);
+          workletNode = new AudioWorkletNode(captureCtx, "pcm16-downsampler");
+          workletNode.port.onmessage = (event) => {
+            const { pcm, peak } = event.data;
+            micFill.style.width = `${Math.min(100, Math.round(peak * 180))}%`;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(pcm);
+            }
+          };
+          source.connect(workletNode);
+          setUiRunning(true);
+          toggleBtn.disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          if (event.data instanceof ArrayBuffer) {
+            playPcm24k(event.data);
+            return;
+          }
+          const msg = JSON.parse(event.data);
+          if (msg.type === "status") {
+            addLog(
+              `✓ connected to ${msg.model} → ${msg.target_name} (${msg.target.toUpperCase()})`,
+              "log-ok"
+            );
+          } else if (msg.type === "input_transcript") {
+            if (msg.language_code) {
+              inputLangBadge.textContent = `detected: ${msg.language_code}`;
+            }
+            if (msg.text) {
+              inputTranscriptEl.classList.remove("muted");
+              inputText += msg.text;
+              if (msg.finished) inputText += "\n";
+              inputTranscriptEl.textContent = inputText;
+              inputTranscriptEl.scrollTop = inputTranscriptEl.scrollHeight;
+            }
+          } else if (msg.type === "output_transcript") {
+            if (msg.language_code) {
+              outputLangBadge.textContent = `target: ${msg.language_code}`;
+            }
+            if (msg.text) {
+              outputTranscriptEl.classList.remove("muted");
+              outputText += msg.text;
+              if (msg.finished) outputText += "\n";
+              outputTranscriptEl.textContent = outputText;
+              outputTranscriptEl.scrollTop = outputTranscriptEl.scrollHeight;
+            }
+          } else if (msg.type === "error") {
+            addLog(`✗ error: ${msg.detail}`, "log-err");
+          }
+        };
+
+        ws.onerror = () => {
+          addLog("✗ WebSocket error", "log-err");
+        };
+
+        ws.onclose = () => {
+          if (isRunning) {
+            addLog("• session closed", "muted");
+            stopSession();
+          }
+        };
+      } catch (err) {
+        addLog(`✗ failed to start: ${err.message}`, "log-err");
+        await stopSession();
+      } finally {
+        toggleBtn.disabled = false;
+      }
+    }
+
+    async function stopSession() {
+      stopPlayback();
+      if (ws) {
+        const oldWs = ws;
+        ws = null;
+        try {
+          if (oldWs.readyState === WebSocket.OPEN) oldWs.send("stop");
+          oldWs.close();
+        } catch {}
+      }
+      if (workletNode) {
+        try { workletNode.disconnect(); } catch {}
+        workletNode = null;
+      }
+      if (mediaStream) {
+        for (const track of mediaStream.getTracks()) track.stop();
+        mediaStream = null;
+      }
+      if (captureCtx) {
+        try { await captureCtx.close(); } catch {}
+        captureCtx = null;
+      }
+      if (playCtx) {
+        try { await playCtx.close(); } catch {}
+        playCtx = null;
+      }
+      setUiRunning(false);
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      if (isRunning) {
+        addLog("> stopping session...", "muted");
+        stopSession();
+      } else {
+        startSession();
+      }
+    });
+
+    updateTranscriptVisibility();
+  </script>
+</body>
+</html>

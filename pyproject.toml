@@ -1,0 +1,11 @@
+[project]
+name = "warsaw2026"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.165.0",
+    "google-genai>=3.6.1",
+    "pymupdf>=2.1",
+    "python-multipart>=0.0.34",
+    "uvicorn>=0.54.0",
+]

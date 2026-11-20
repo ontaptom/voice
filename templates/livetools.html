@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevFest Warsaw 2026 — Live Async Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050a14;
+      --bg-card: rgba(11, 18, 33, 0.9);
+      --bg-card-inner: #080f1d;
+      --border: #1b2a44;
+      --border-strong: #2c4166;
+      --text: #f1f5f9;
+      --text-muted: #8fa3bf;
+      --blue: #4285f4;
+      --blue-hover: #3374e0;
+      --green: #4ade80;
+      --google-green: #34a853;
+      --yellow: #fbbc04;
+      --red: #ea4335;
+      --red-hover: #d33426;
+      --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 45% at 80% 95%, rgba(52, 168, 83, 0.14), transparent 70%),
+        radial-gradient(ellipse 50% 40% at 15% 15%, rgba(66, 133, 244, 0.12), transparent 70%),
+        linear-gradient(125deg, transparent 48%, rgba(74, 222, 128, 0.04) 50%, transparent 52%);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(5, 10, 20, 0.82);
+      border-bottom: 1px solid rgba(27, 42, 68, 0.7);
+    }
+
+    .topbar-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+    }
+
+    .gdg-icon { width: 28px; height: 18px; flex-shrink: 0; }
+
+    .status-pill {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .status-pill.live { color: var(--green); }
+    .status-pill.live .status-dot {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+    }
+
+    main {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 2.5rem;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .hero-eyebrow span { color: var(--green); }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.8vw, 2.05rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .year-pill {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.22rem 0.75rem;
+      border: 1px solid rgba(241, 245, 249, 0.55);
+      border-radius: 999px;
+      color: #f8fafc;
+    }
+
+    .hero-subtitle {
+      margin: 0.35rem 0 0;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      color: var(--green);
+    }
+
+    .google-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 34px);
+      gap: 6px;
+      align-self: center;
+    }
+
+    .google-bars span { height: 3px; border-radius: 999px; }
+    .bar-blue { background: var(--blue); }
+    .bar-green { background: var(--google-green); }
+    .bar-yellow { background: var(--yellow); }
+    .bar-red { background: var(--red); }
+
+    .terminal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 25, 45, 0.65);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-dots {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red { background: var(--red); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-green { background: var(--google-green); }
+
+    .terminal-title { margin-left: 0.55rem; color: #94a3b8; }
+
+    .config-body {
+      padding: 1.2rem 1.25rem;
+      background: var(--bg-card-inner);
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .config-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.25rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .field-label {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .field-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .pill-btn {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(11, 18, 33, 0.85);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover:not(:disabled) {
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .pill-btn.active {
+      background: rgba(66, 133, 244, 0.2);
+      border-color: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(66, 133, 244, 0.25);
+    }
+
+    .pill-btn.active-warn {
+      background: rgba(251, 188, 4, 0.16);
+      border-color: var(--yellow);
+      color: #fde68a;
+    }
+
+    .pill-btn.active-green {
+      background: rgba(52, 168, 83, 0.18);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .pill-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid rgba(27, 42, 68, 0.7);
+    }
+
+    .action-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.68rem 1.4rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #ffffff;
+      border: 1px solid var(--blue);
+      box-shadow: 0 0 22px rgba(66, 133, 244, 0.28);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--blue-hover);
+      border-color: var(--blue-hover);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: #ffffff;
+      border: 1px solid var(--red);
+      box-shadow: 0 0 22px rgba(234, 67, 53, 0.28);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--red-hover);
+      border-color: var(--red-hover);
+    }
+
+    .btn-success {
+      background: var(--google-green);
+      color: #ffffff;
+      border: 1px solid var(--google-green);
+      box-shadow: 0 0 20px rgba(52, 168, 83, 0.25);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #2c9247;
+      border-color: #2c9247;
+    }
+
+    .btn-outline {
+      background: rgba(11, 18, 33, 0.75);
+      color: #cbd5e1;
+      border: 1px solid var(--border-strong);
+      padding: 0.48rem 1rem;
+      font-size: 0.74rem;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .meter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .meter-track {
+      width: 140px;
+      height: 8px;
+      border-radius: 999px;
+      background: #0f1a2e;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      transition: width 0.06s linear;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.15rem;
+      margin-top: 1.15rem;
+    }
+
+    @media (max-width: 860px) {
+      .stage-grid { grid-template-columns: 1fr; }
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.16rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      color: #cbd5e1;
+    }
+
+    .badge-green { border-color: rgba(74, 222, 128, 0.45); color: var(--green); }
+    .badge-blue { border-color: rgba(66, 133, 244, 0.5); color: #93c5fd; }
+    .badge-yellow {
+      border-color: rgba(251, 188, 4, 0.6);
+      color: var(--yellow);
+      background: rgba(251, 188, 4, 0.1);
+    }
+
+    .studio-body {
+      padding: 1.15rem;
+      background: var(--bg-card-inner);
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .canvas-frame {
+      flex: 1;
+      min-height: 270px;
+      border-radius: 10px;
+      border: 1px dashed var(--border-strong);
+      background: #050a14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .canvas-frame img {
+      max-width: 100%;
+      max-height: 320px;
+      border-radius: 8px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid rgba(66, 133, 244, 0.25);
+      border-top-color: var(--blue);
+      animation: spin 0.85s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .canvas-caption {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .canvas-caption strong { color: #f1f5f9; }
+
+    .critic-card.pending-glow {
+      border-color: rgba(251, 188, 4, 0.65);
+      box-shadow: 0 0 28px rgba(251, 188, 4, 0.16);
+    }
+
+    .critic-brief {
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #050a14;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .critic-brief-title {
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--yellow);
+      margin-bottom: 0.3rem;
+    }
+
+    .star-row {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .star-btn {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.48rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: #050a14;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .star-btn:hover:not(:disabled) {
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    .star-btn.active {
+      background: rgba(251, 188, 4, 0.18);
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    .star-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .critic-textarea {
+      width: 100%;
+      min-height: 82px;
+      resize: vertical;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: #050a14;
+      color: #f1f5f9;
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      line-height: 1.45;
+      outline: none;
+    }
+
+    .critic-textarea:focus { border-color: var(--blue); }
+    .critic-textarea:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .critic-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.15rem;
+      margin-top: 1.15rem;
+    }
+
+    @media (max-width: 860px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    .log-body {
+      padding: 0.9rem 1.15rem;
+      background: var(--bg-card-inner);
+      font-family: var(--font-mono);
+      font-size: 0.79rem;
+      line-height: 1.55;
+      height: 210px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .chat-body {
+      padding: 0.9rem 1.15rem;
+      background: var(--bg-card-inner);
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      height: 210px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .chat-line { color: #e2e8f0; }
+    .chat-role {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-right: 0.45rem;
+    }
+    .role-you { color: #93c5fd; }
+    .role-gemini { color: var(--green); }
+
+    .log-line { color: #cbd5e1; }
+    .log-ok { color: var(--green); }
+    .log-send { color: #93c5fd; }
+    .log-warn { color: var(--yellow); }
+    .log-err { color: var(--red); }
+    .muted { color: var(--text-muted); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="gdg-icon" viewBox="0 0 44 26" fill="none" aria-hidden="true">
+          <path d="M16.5 3.5L6 13L16.5 22.5" stroke="#EA4335" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6 13L16.5 22.5" stroke="#4285F4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M27.5 3.5L38 13L27.5 22.5" stroke="#34A853" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M38 13L27.5 22.5" stroke="#FBBC04" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>GDG WARSAW</span>
+      </div>
+      <div id="status-pill" class="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">status: idle</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="hero-eyebrow"><span>&gt;</span> devfest.init --warsaw</div>
+        <div class="hero-title-row">
+          <h1>DevFest Warsaw Demo</h1>
+          <span class="year-pill">2026</span>
+        </div>
+        <p class="hero-subtitle">Live Voice Agent · Blocking vs. Async Tool Calling</p>
+      </div>
+      <div class="google-bars" aria-hidden="true">
+        <span class="bar-blue"></span>
+        <span class="bar-green"></span>
+        <span class="bar-yellow"></span>
+        <span class="bar-red"></span>
+      </div>
+    </section>
+
+    <section class="terminal-card">
+      <div class="terminal-bar">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">live-tools.sh</span>
+        </div>
+        <span id="models-bar">gemini-3.8-live + gemini-3.1-flash-lite-image</span>
+      </div>
+
+      <div class="config-body">
+        <div class="config-row">
+          <div class="field-group">
+            <span class="field-label">Tool Behavior (set before session start)</span>
+            <div class="pill-group" id="behavior-pills">
+              <button class="pill-btn" type="button" data-behavior="BLOCKING">BLOCKING</button>
+              <button class="pill-btn active-green" type="button" data-behavior="NON_BLOCKING">NON_BLOCKING</button>
+            </div>
+            <span id="behavior-hint" class="field-hint">Keep chatting while tools run in the background.</span>
+          </div>
+
+          <div class="field-group" id="scheduling-group">
+            <span class="field-label">Default Async Scheduling</span>
+            <div class="pill-group" id="scheduling-pills">
+              <button class="pill-btn active" type="button" data-sched="WHEN_IDLE">WHEN_IDLE</button>
+              <button class="pill-btn" type="button" data-sched="INTERRUPT">INTERRUPT</button>
+              <button class="pill-btn" type="button" data-sched="SILENT">SILENT</button>
+            </div>
+            <span id="scheduling-hint" class="field-hint">Wait until Gemini finishes its current sentence, then weave in the result.</span>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <div class="action-left">
+            <button id="toggle-btn" class="btn btn-primary" type="button">Start Live Session</button>
+            <div class="pill-group" id="model-pills" title="Live model (switch between sessions)">
+              <button class="pill-btn active" type="button" data-model="gemini-3.8-live">3.8-live</button>
+              <button class="pill-btn" type="button" data-model="gemini-2.5-flash-native-audio-preview-12-2025">2.5-flash-native-audio</button>
+            </div>
+            <button id="clear-btn" class="btn btn-outline" type="button">Clear</button>
+          </div>
+
+          <div class="meter-group">
+            <span>MIC</span>
+            <div class="meter-track"><div id="mic-fill" class="meter-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage-grid">
+      <!-- Tool 1: Image Generator -->
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">tool: generate_image()</span>
+          </div>
+          <span id="image-badge" class="badge">idle</span>
+        </div>
+        <div class="studio-body">
+          <div id="canvas-frame" class="canvas-frame">
+            <div class="muted">Ask Gemini: "Generate an image of a cyberpunk Warsaw skyline"</div>
+          </div>
+          <div id="canvas-caption" class="canvas-caption">
+            Model: <strong>gemini-3.1-flash-lite-image</strong> · waiting for tool call
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 2: Human Art Critic -->
+      <div id="critic-card" class="terminal-card critic-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">tool: ask_art_critic()</span>
+          </div>
+          <span id="critic-badge" class="badge">idle</span>
+        </div>
+        <div class="studio-body">
+          <div id="critic-brief" class="critic-brief">
+            <div id="critic-title" class="critic-brief-title">Human Art Critic</div>
+            <div id="critic-note" class="muted">Ask Gemini: "Ask the human art critic what they think of it"</div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Rating (1 – 5)</span>
+            <div class="star-row" id="star-row">
+              <button class="star-btn" type="button" data-rating="1" disabled>1 ★</button>
+              <button class="star-btn" type="button" data-rating="2" disabled>2 ★</button>
+              <button class="star-btn" type="button" data-rating="3" disabled>3 ★</button>
+              <button class="star-btn active" type="button" data-rating="4" disabled>4 ★</button>
+              <button class="star-btn" type="button" data-rating="5" disabled>5 ★</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Feedback Message</span>
+            <textarea
+              id="critic-feedback"
+              class="critic-textarea"
+              placeholder="e.g. Love the lighting, but needs way more pierogi!"
+              disabled
+            ></textarea>
+          </div>
+
+          <div class="critic-footer">
+            <div class="pill-group" id="critic-sched-pills">
+              <button class="pill-btn active" type="button" data-csched="WHEN_IDLE" disabled>WHEN_IDLE</button>
+              <button class="pill-btn" type="button" data-csched="INTERRUPT" disabled>INTERRUPT</button>
+              <button class="pill-btn" type="button" data-csched="SILENT" disabled>SILENT</button>
+            </div>
+            <button id="critic-submit-btn" class="btn btn-success" type="button" disabled>Submit Critique</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">conversation.log</span>
+          </div>
+          <span>voice transcripts</span>
+        </div>
+        <div id="chat-body" class="chat-body">
+          <div class="muted">Live speech transcripts appear here...</div>
+        </div>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-title">tool-events.log</span>
+          </div>
+          <span>use headphones to avoid echo</span>
+        </div>
+        <div id="log-body" class="log-body">
+          <div class="log-line muted">$ ./live-tools --ready</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const modelsBar = document.getElementById("models-bar");
+    const modelPills = document.getElementById("model-pills");
+    const behaviorPills = document.getElementById("behavior-pills");
+    const behaviorHint = document.getElementById("behavior-hint");
+    const schedulingPills = document.getElementById("scheduling-pills");
+    const schedulingHint = document.getElementById("scheduling-hint");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const clearBtn = document.getElementById("clear-btn");
+    const micFill = document.getElementById("mic-fill");
+    const statusPill = document.getElementById("status-pill");
+    const statusText = document.getElementById("status-text");
+
+    const imageBadge = document.getElementById("image-badge");
+    const canvasFrame = document.getElementById("canvas-frame");
+    const canvasCaption = document.getElementById("canvas-caption");
+
+    const criticCard = document.getElementById("critic-card");
+    const criticBadge = document.getElementById("critic-badge");
+    const criticTitle = document.getElementById("critic-title");
+    const criticNote = document.getElementById("critic-note");
+    const starRow = document.getElementById("star-row");
+    const criticFeedback = document.getElementById("critic-feedback");
+    const criticSchedPills = document.getElementById("critic-sched-pills");
+    const criticSubmitBtn = document.getElementById("critic-submit-btn");
+
+    const chatBody = document.getElementById("chat-body");
+    const logBody = document.getElementById("log-body");
+
+    const SCHED_HINTS = {
+      WHEN_IDLE: "Wait until Gemini finishes its current sentence, then weave in the result.",
+      INTERRUPT: "Cut Gemini off immediately to announce the tool result.",
+      SILENT: "Quietly add the result to context without speaking until asked.",
+    };
+
+    let selectedModel = "gemini-3.8-live";
+    let selectedBehavior = "NON_BLOCKING";
+    let selectedScheduling = "WHEN_IDLE";
+    let criticRating = 4;
+    let criticScheduling = "WHEN_IDLE";
+    let pendingCriticId = null;
+
+    function modelSupportsScheduling() {
+      return !selectedModel.startsWith("gemini-2.5-");
+    }
+
+    let isRunning = false;
+    let ws = null;
+    let mediaStream = null;
+    let captureCtx = null;
+    let workletNode = null;
+    let playCtx = null;
+    let nextPlayTime = 0;
+    let activeSources = [];
+
+    let imageTimerInterval = null;
+    let imageStartedAt = 0;
+
+    let lastChatRole = null;
+    let lastChatSpan = null;
+
+    function ts() {
+      const d = new Date();
+      return d.toTimeString().slice(0, 8);
+    }
+
+    function addLog(text, cls = "") {
+      const line = document.createElement("div");
+      line.className = `log-line ${cls}`.trim();
+      line.textContent = `[${ts()}] ${text}`;
+      logBody.appendChild(line);
+      logBody.scrollTop = logBody.scrollHeight;
+    }
+
+    function appendTranscript(role, text, finished) {
+      if (!text) return;
+      if (chatBody.firstElementChild && chatBody.firstElementChild.classList.contains("muted")) {
+        chatBody.innerHTML = "";
+      }
+      if (lastChatRole !== role || !lastChatSpan) {
+        const line = document.createElement("div");
+        line.className = "chat-line";
+        const tag = document.createElement("span");
+        tag.className = `chat-role ${role === "you" ? "role-you" : "role-gemini"}`;
+        tag.textContent = role === "you" ? "YOU:" : "GEMINI:";
+        const span = document.createElement("span");
+        line.appendChild(tag);
+        line.appendChild(span);
+        chatBody.appendChild(line);
+        lastChatRole = role;
+        lastChatSpan = span;
+      }
+      lastChatSpan.textContent += text;
+      if (finished) {
+        lastChatRole = null;
+        lastChatSpan = null;
+      }
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function stopImageTimer() {
+      if (imageTimerInterval) {
+        clearInterval(imageTimerInterval);
+        imageTimerInterval = null;
+      }
+    }
+
+    function setCriticActive(callId, title, artistNote) {
+      pendingCriticId = callId;
+      criticScheduling = selectedScheduling;
+      syncCriticSchedButtons();
+
+      criticCard.classList.add("pending-glow");
+      criticBadge.textContent = "PENDING REVIEW";
+      criticBadge.className = "badge badge-yellow";
+      criticTitle.textContent = `Review Request: "${title}"`;
+      criticNote.className = "";
+      criticNote.textContent = artistNote || "Gemini is waiting for your rating and feedback.";
+
+      for (const b of starRow.querySelectorAll(".star-btn")) b.disabled = false;
+      criticFeedback.disabled = false;
+      criticSubmitBtn.disabled = false;
+      updateCriticSchedDisabled();
+      criticFeedback.focus();
+    }
+
+    function resetCritic(message = 'Ask Gemini: "Ask the human art critic what they think of it"') {
+      pendingCriticId = null;
+      criticCard.classList.remove("pending-glow");
+      criticBadge.textContent = "idle";
+      criticBadge.className = "badge";
+      criticTitle.textContent = "Human Art Critic";
+      criticNote.className = "muted";
+      criticNote.textContent = message;
+      criticFeedback.value = "";
+      criticFeedback.disabled = true;
+      criticSubmitBtn.disabled = true;
+      for (const b of starRow.querySelectorAll(".star-btn")) b.disabled = true;
+      updateCriticSchedDisabled();
+    }
+
+    function syncCriticSchedButtons() {
+      for (const btn of criticSchedPills.querySelectorAll(".pill-btn")) {
+        btn.classList.toggle("active", btn.dataset.csched === criticScheduling);
+      }
+    }
+
+    function updateCriticSchedDisabled() {
+      const showSched = selectedBehavior === "NON_BLOCKING" && modelSupportsScheduling();
+      const disable = !pendingCriticId || !showSched;
+      for (const btn of criticSchedPills.querySelectorAll(".pill-btn")) {
+        btn.disabled = disable;
+      }
+      criticSchedPills.classList.toggle("hidden", !showSched);
+    }
+
+    function updateConfigUi() {
+      const isNonBlocking = selectedBehavior === "NON_BLOCKING";
+      const schedSupported = modelSupportsScheduling();
+      modelsBar.textContent = `${selectedModel} + gemini-3.1-flash-lite-image`;
+
+      for (const btn of modelPills.querySelectorAll(".pill-btn")) {
+        btn.disabled = isRunning;
+        btn.classList.toggle("active", btn.dataset.model === selectedModel);
+      }
+
+      for (const btn of behaviorPills.querySelectorAll(".pill-btn")) {
+        btn.disabled = isRunning;
+        const b = btn.dataset.behavior;
+        btn.classList.remove("active-warn", "active-green");
+        if (b === selectedBehavior) {
+          btn.classList.add(b === "BLOCKING" ? "active-warn" : "active-green");
+        }
+      }
+      behaviorHint.textContent = isNonBlocking
+        ? "Keep chatting while tools run in the background."
+        : "Agent freezes in silence until the tool finishes and returns.";
+
+      for (const btn of schedulingPills.querySelectorAll(".pill-btn")) {
+        btn.disabled = !isNonBlocking || !schedSupported;
+        btn.classList.toggle("active", btn.dataset.sched === selectedScheduling);
+      }
+      if (!isNonBlocking) {
+        schedulingHint.textContent = "Scheduling only applies to NON_BLOCKING mode.";
+      } else if (!schedSupported) {
+        schedulingHint.textContent = "Omitted on 2.5 preview (avoids 1007 error; uses default behavior).";
+      } else {
+        schedulingHint.textContent = SCHED_HINTS[selectedScheduling];
+      }
+      updateCriticSchedDisabled();
+    }
+
+    function setUiRunning(running) {
+      isRunning = running;
+      toggleBtn.textContent = running ? "Stop Live Session" : "Start Live Session";
+      toggleBtn.className = running ? "btn btn-danger" : "btn btn-primary";
+      statusPill.classList.toggle("live", running);
+      const shortModel = selectedModel === "gemini-3.8-live" ? "3.8-live" : "2.5-native-audio";
+      statusText.textContent = running
+        ? `status: live (${shortModel} · ${selectedBehavior})`
+        : "status: idle";
+      if (!running) {
+        micFill.style.width = "0%";
+        stopImageTimer();
+        resetCritic();
+      }
+      updateConfigUi();
+    }
+
+    modelPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-btn");
+      if (!btn || isRunning) return;
+      selectedModel = btn.dataset.model;
+      updateConfigUi();
+    });
+
+    behaviorPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-btn");
+      if (!btn || isRunning) return;
+      selectedBehavior = btn.dataset.behavior;
+      updateConfigUi();
+    });
+
+    schedulingPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-btn");
+      if (!btn || selectedBehavior === "BLOCKING" || !modelSupportsScheduling()) return;
+      selectedScheduling = btn.dataset.sched;
+      if (!pendingCriticId) {
+        criticScheduling = selectedScheduling;
+        syncCriticSchedButtons();
+      }
+      updateConfigUi();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "set_scheduling", scheduling: selectedScheduling }));
+        addLog(`> default scheduling updated → ${selectedScheduling}`, "log-send");
+      }
+    });
+
+    starRow.addEventListener("click", (e) => {
+      const btn = e.target.closest(".star-btn");
+      if (!btn || btn.disabled) return;
+      criticRating = Number(btn.dataset.rating);
+      for (const el of starRow.querySelectorAll(".star-btn")) {
+        el.classList.toggle("active", el === btn);
+      }
+    });
+
+    criticSchedPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".pill-btn");
+      if (!btn || btn.disabled) return;
+      criticScheduling = btn.dataset.csched;
+      syncCriticSchedButtons();
+    });
+
+    criticSubmitBtn.addEventListener("click", () => {
+      if (!pendingCriticId || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const feedback = criticFeedback.value.trim() || "Looks interesting!";
+      const payload = {
+        type: "critic_submit",
+        id: pendingCriticId,
+        rating: criticRating,
+        feedback,
+        scheduling: selectedBehavior === "NON_BLOCKING" ? criticScheduling : undefined,
+      };
+      ws.send(JSON.stringify(payload));
+      resetCritic(`Submitted ${criticRating}/5 — waiting for next critique request...`);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      chatBody.innerHTML = '<div class="muted">Live speech transcripts appear here...</div>';
+      lastChatRole = null;
+      lastChatSpan = null;
+      logBody.innerHTML = '<div class="log-line muted">$ ./live-tools --cleared</div>';
+      stopImageTimer();
+      imageBadge.textContent = "idle";
+      imageBadge.className = "badge";
+      canvasFrame.innerHTML = '<div class="muted">Ask Gemini: "Generate an image of a cyberpunk Warsaw skyline"</div>';
+      canvasCaption.innerHTML = 'Model: <strong>gemini-3.1-flash-lite-image</strong> · waiting for tool call';
+    });
+
+    function playPcm24k(arrayBuffer) {
+      if (!playCtx) return;
+      const int16 = new Int16Array(arrayBuffer);
+      if (int16.length === 0) return;
+
+      const float32 = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) {
+        float32[i] = int16[i] / 32768;
+      }
+
+      const audioBuffer = playCtx.createBuffer(1, float32.length, 24000);
+      audioBuffer.copyToChannel(float32, 0);
+
+      const source = playCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(playCtx.destination);
+
+      const now = playCtx.currentTime;
+      if (nextPlayTime < now) {
+        nextPlayTime = now + 0.02;
+      }
+      source.start(nextPlayTime);
+      nextPlayTime += audioBuffer.duration;
+
+      activeSources.push(source);
+      source.onended = () => {
+        activeSources = activeSources.filter((s) => s !== source);
+      };
+    }
+
+    function stopPlayback() {
+      for (const s of activeSources) {
+        try { s.stop(); } catch {}
+      }
+      activeSources = [];
+      nextPlayTime = 0;
+    }
+
+    const WORKLET_CODE = `
+      class Pcm16Downsampler extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.targetRate = 16000;
+          this.ratio = sampleRate / this.targetRate;
+          this.chunkSamples = 1600;
+          this.outBuf = new Int16Array(this.chunkSamples);
+          this.outIdx = 0;
+          this.pos = 0;
+          this.prevSample = 0;
+        }
+
+        process(inputs) {
+          const input = inputs[0];
+          if (!input || !input[0] || input[0].length === 0) return true;
+          const ch = input[0];
+
+          let peak = 0;
+          for (let i = 0; i < ch.length; i++) {
+            const a = Math.abs(ch[i]);
+            if (a > peak) peak = a;
+          }
+
+          while (this.pos < ch.length) {
+            const idx = Math.floor(this.pos);
+            const frac = this.pos - idx;
+            const s0 = idx === 0 ? this.prevSample : ch[idx - 1];
+            const s1 = ch[idx];
+            const sample = s0 + (s1 - s0) * frac;
+            const clamped = Math.max(-1, Math.min(1, sample));
+            this.outBuf[this.outIdx++] = clamped < 0 ? clamped * 32768 : clamped * 32767;
+            this.pos += this.ratio;
+
+            if (this.outIdx >= this.chunkSamples) {
+              const copy = this.outBuf.slice();
+              this.port.postMessage({ pcm: copy.buffer, peak }, [copy.buffer]);
+              this.outIdx = 0;
+            }
+          }
+
+          this.pos -= ch.length;
+          this.prevSample = ch[ch.length - 1];
+          return true;
+        }
+      }
+      registerProcessor("pcm16-downsampler", Pcm16Downsampler);
+    `;
+
+    async function startSession() {
+      if (isRunning) return;
+      toggleBtn.disabled = true;
+
+      try {
+        addLog(
+          `> connecting /ws/live (model=${selectedModel}, behavior=${selectedBehavior}, scheduling=${modelSupportsScheduling() ? selectedScheduling : "omitted"})...`,
+          "log-send"
+        );
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+
+        captureCtx = new AudioContext();
+        await captureCtx.resume();
+
+        playCtx = new AudioContext({ sampleRate: 24000 });
+        await playCtx.resume();
+        nextPlayTime = 0;
+
+        const workletBlob = new Blob([WORKLET_CODE], { type: "application/javascript" });
+        const workletUrl = URL.createObjectURL(workletBlob);
+        await captureCtx.audioWorklet.addModule(workletUrl);
+        URL.revokeObjectURL(workletUrl);
+
+        const proto = location.protocol === "https:" ? "wss" : "ws";
+        ws = new WebSocket(`${proto}://${location.host}/ws/live`);
+        ws.binaryType = "arraybuffer";
+
+        ws.onopen = () => {
+          ws.send(JSON.stringify({
+            type: "start",
+            model: selectedModel,
+            behavior: selectedBehavior,
+            scheduling: selectedScheduling,
+          }));
+
+          const source = captureCtx.createMediaStreamSource(mediaStream);
+          workletNode = new AudioWorkletNode(captureCtx, "pcm16-downsampler");
+          workletNode.port.onmessage = (event) => {
+            const { pcm, peak } = event.data;
+            micFill.style.width = `${Math.min(100, Math.round(peak * 180))}%`;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(pcm);
+            }
+          };
+          source.connect(workletNode);
+          setUiRunning(true);
+          toggleBtn.disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          if (event.data instanceof ArrayBuffer) {
+            playPcm24k(event.data);
+            return;
+          }
+
+          const msg = JSON.parse(event.data);
+          if (msg.type === "status") {
+            addLog(
+              `✓ connected ${msg.live_model} (${msg.behavior}, default=${msg.scheduling})`,
+              "log-ok"
+            );
+          } else if (msg.type === "input_transcript") {
+            appendTranscript("you", msg.text, msg.finished);
+          } else if (msg.type === "output_transcript") {
+            appendTranscript("gemini", msg.text, msg.finished);
+          } else if (msg.type === "interrupted") {
+            stopPlayback();
+            lastChatRole = null;
+            lastChatSpan = null;
+            addLog("⚡ interrupted (audio buffer flushed)", "log-warn");
+          } else if (msg.type === "tool_call") {
+            addLog(`⚙ tool_call ${msg.name}(${JSON.stringify(msg.args)})`, "log-send");
+            if (msg.name === "generate_image") {
+              stopImageTimer();
+              imageStartedAt = performance.now();
+              imageBadge.className = "badge badge-blue";
+              imageBadge.textContent = "generating 0.0s";
+              canvasFrame.innerHTML = `
+                <div class="spinner"></div>
+                <div style="font-family: var(--font-mono); font-size: 0.85rem;">Generating "${escapeHtml(msg.args.title || "artwork")}"...</div>
+              `;
+              canvasCaption.innerHTML = `Prompt: <strong>${escapeHtml(msg.args.prompt || "")}</strong>`;
+              imageTimerInterval = setInterval(() => {
+                const sec = ((performance.now() - imageStartedAt) / 1000).toFixed(1);
+                imageBadge.textContent = `generating ${sec}s`;
+              }, 100);
+            }
+          } else if (msg.type === "image_ready") {
+            stopImageTimer();
+            imageBadge.className = "badge badge-green";
+            imageBadge.textContent = `ready · ${msg.elapsed_s}s`;
+            canvasFrame.innerHTML = "";
+            const img = document.createElement("img");
+            img.src = msg.data_url;
+            img.alt = msg.title || "Generated artwork";
+            canvasFrame.appendChild(img);
+            canvasCaption.innerHTML = `<strong>${escapeHtml(msg.title)}</strong> — ${escapeHtml(msg.prompt)}`;
+          } else if (msg.type === "image_error") {
+            stopImageTimer();
+            imageBadge.className = "badge";
+            imageBadge.textContent = "error";
+            canvasFrame.innerHTML = `<div class="log-err">Image generation failed: ${escapeHtml(msg.detail)}</div>`;
+          } else if (msg.type === "critic_request") {
+            setCriticActive(msg.id, msg.title, msg.artist_note);
+            addLog(`🎨 human critic requested for "${msg.title}"`, "log-warn");
+          } else if (msg.type === "tool_response_sent") {
+            const schedTag = msg.scheduling ? ` [${msg.scheduling}]` : " [BLOCKING]";
+            addLog(`✓ tool_response ${msg.name}${schedTag}: ${msg.summary}`, "log-ok");
+          } else if (msg.type === "tool_cancelled") {
+            addLog(`✗ tool_call_cancellation ids=${msg.ids.join(",")}`, "log-warn");
+            if (pendingCriticId && msg.ids.includes(pendingCriticId)) {
+              resetCritic("Request cancelled by interruption.");
+            }
+          } else if (msg.type === "error") {
+            addLog(`✗ error: ${msg.detail}`, "log-err");
+          }
+        };
+
+        ws.onerror = () => addLog("✗ WebSocket error", "log-err");
+        ws.onclose = () => {
+          if (isRunning) {
+            addLog("• session closed", "muted");
+            stopSession();
+          }
+        };
+      } catch (err) {
+        addLog(`✗ failed to start: ${err.message}`, "log-err");
+        await stopSession();
+      } finally {
+        toggleBtn.disabled = false;
+      }
+    }
+
+    async function stopSession() {
+      stopPlayback();
+      if (ws) {
+        const oldWs = ws;
+        ws = null;
+        try {
+          if (oldWs.readyState === WebSocket.OPEN) oldWs.send(JSON.stringify({ type: "stop" }));
+          oldWs.close();
+        } catch {}
+      }
+      if (workletNode) {
+        try { workletNode.disconnect(); } catch {}
+        workletNode = null;
+      }
+      if (mediaStream) {
+        for (const track of mediaStream.getTracks()) track.stop();
+        mediaStream = null;
+      }
+      if (captureCtx) {
+        try { await captureCtx.close(); } catch {}
+        captureCtx = null;
+      }
+      if (playCtx) {
+        try { await playCtx.close(); } catch {}
+        playCtx = null;
+      }
+      setUiRunning(false);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      if (isRunning) {
+        addLog("> stopping session...", "muted");
+        stopSession();
+      } else {
+        startSession();
+      }
+    });
+
+    updateConfigUi();
+  </script>
+</body>
+</html>
