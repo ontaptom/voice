@@ -371,6 +371,24 @@
       color: #ffffff;
     }
 
+    .btn-outline.muted-mic {
+      background: rgba(234, 67, 53, 0.18);
+      border-color: var(--red);
+      color: #fca5a5;
+      box-shadow: 0 0 16px rgba(234, 67, 53, 0.22);
+    }
+
+    .btn-outline.muted-mic:hover:not(:disabled) {
+      background: rgba(234, 67, 53, 0.28);
+      border-color: var(--red-hover);
+      color: #ffffff;
+    }
+
+    .mic-label-muted {
+      color: var(--red);
+      font-weight: 600;
+    }
+
     .meter-group {
       display: flex;
       align-items: center;
@@ -690,6 +708,7 @@
         <div class="action-row">
           <div class="action-left">
             <button id="toggle-btn" class="btn btn-primary" type="button">Start Live Session</button>
+            <button id="mute-btn" class="btn btn-outline" type="button" aria-pressed="false" title="Mute / unmute microphone (Shortcut: M)">Mute [M]</button>
             <div class="pill-group" id="model-pills" title="Live model (switch between sessions)">
               <button class="pill-btn active" type="button" data-model="gemini-3.8-live">3.8-live</button>
               <button class="pill-btn" type="button" data-model="gemini-2.5-flash-native-audio-preview-12-2025">2.5-flash-native-audio</button>
@@ -698,7 +717,7 @@
           </div>
 
           <div class="meter-group">
-            <span>MIC</span>
+            <span id="mic-label">MIC</span>
             <div class="meter-track"><div id="mic-fill" class="meter-fill"></div></div>
           </div>
         </div>
@@ -818,7 +837,9 @@
     const schedulingPills = document.getElementById("scheduling-pills");
     const schedulingHint = document.getElementById("scheduling-hint");
     const toggleBtn = document.getElementById("toggle-btn");
+    const muteBtn = document.getElementById("mute-btn");
     const clearBtn = document.getElementById("clear-btn");
+    const micLabel = document.getElementById("mic-label");
     const micFill = document.getElementById("mic-fill");
     const statusPill = document.getElementById("status-pill");
     const statusText = document.getElementById("status-text");
@@ -857,6 +878,8 @@
     }
 
     let isRunning = false;
+    let isMuted = false;
+    let wasStreamingMic = false;
     let ws = null;
     let mediaStream = null;
     let captureCtx = null;
@@ -1002,20 +1025,56 @@
       updateCriticSchedDisabled();
     }
 
+    function applyTrackMuteState() {
+      if (!mediaStream) return;
+      for (const track of mediaStream.getAudioTracks()) {
+        track.enabled = !isMuted;
+      }
+    }
+
+    function updateStatusText() {
+      statusPill.classList.toggle("live", isRunning);
+      if (!isRunning) {
+        statusText.textContent = isMuted ? "status: idle (mic muted)" : "status: idle";
+        return;
+      }
+      const shortModel = selectedModel === "gemini-3.8-live" ? "3.8-live" : "2.5-native-audio";
+      statusText.textContent = `status: live (${shortModel} · ${selectedBehavior}${isMuted ? " · MUTED" : ""})`;
+    }
+
+    function updateMicUi() {
+      muteBtn.textContent = isMuted ? "Unmute [M]" : "Mute [M]";
+      muteBtn.classList.toggle("muted-mic", isMuted);
+      muteBtn.setAttribute("aria-pressed", String(isMuted));
+      micLabel.textContent = isMuted ? "MUTED" : "MIC";
+      micLabel.classList.toggle("mic-label-muted", isMuted);
+      if (isMuted || !isRunning) {
+        micFill.style.width = "0%";
+      }
+      updateStatusText();
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      applyTrackMuteState();
+      if (isMuted && isRunning && wasStreamingMic && ws && ws.readyState === WebSocket.OPEN) {
+        wasStreamingMic = false;
+        ws.send(JSON.stringify({ type: "audio_stream_end" }));
+      }
+      updateMicUi();
+      addLog(isMuted ? "🔇 mic muted [M]" : "🎙 mic unmuted [M]", isMuted ? "log-warn" : "log-ok");
+    }
+
     function setUiRunning(running) {
       isRunning = running;
       toggleBtn.textContent = running ? "Stop Live Session" : "Start Live Session";
       toggleBtn.className = running ? "btn btn-danger" : "btn btn-primary";
-      statusPill.classList.toggle("live", running);
-      const shortModel = selectedModel === "gemini-3.8-live" ? "3.8-live" : "2.5-native-audio";
-      statusText.textContent = running
-        ? `status: live (${shortModel} · ${selectedBehavior})`
-        : "status: idle";
       if (!running) {
-        micFill.style.width = "0%";
+        wasStreamingMic = false;
         stopImageTimer();
         resetCritic();
       }
+      updateMicUi();
       updateConfigUi();
     }
 
@@ -1195,6 +1254,7 @@
             autoGainControl: true,
           },
         });
+        applyTrackMuteState();
 
         captureCtx = new AudioContext();
         await captureCtx.resume();
@@ -1222,10 +1282,16 @@
 
           const source = captureCtx.createMediaStreamSource(mediaStream);
           workletNode = new AudioWorkletNode(captureCtx, "pcm16-downsampler");
+          wasStreamingMic = false;
           workletNode.port.onmessage = (event) => {
             const { pcm, peak } = event.data;
+            if (isMuted) {
+              micFill.style.width = "0%";
+              return;
+            }
             micFill.style.width = `${Math.min(100, Math.round(peak * 180))}%`;
             if (ws && ws.readyState === WebSocket.OPEN) {
+              wasStreamingMic = true;
               ws.send(pcm);
             }
           };
@@ -1364,6 +1430,26 @@
       }
     });
 
+    muteBtn.addEventListener("click", toggleMute);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : "";
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        (e.target && e.target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        toggleMute();
+      }
+    });
+
+    updateMicUi();
     updateConfigUi();
   </script>
 </body>

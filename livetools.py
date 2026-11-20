@@ -311,6 +311,7 @@ async def ws_live(ws: WebSocket) -> None:
 
             async def browser_to_gemini() -> None:
                 nonlocal default_scheduling
+                silent_chunk = b"\x00" * 3200  # 100ms of 16kHz Int16 PCM silence
                 while True:
                     msg = await ws.receive()
                     msg_type = msg.get("type")
@@ -336,6 +337,17 @@ async def ws_live(ws: WebSocket) -> None:
                         evt_type = data.get("type")
                         if evt_type == "stop":
                             break
+                        elif evt_type == "audio_stream_end":
+                            async with session_lock:
+                                with contextlib.suppress(Exception):
+                                    for _ in range(6):
+                                        await session.send_realtime_input(
+                                            audio=types.Blob(
+                                                data=silent_chunk,
+                                                mime_type="audio/pcm;rate=16000",
+                                            )
+                                        )
+                                    await session.send_realtime_input(audio_stream_end=True)
                         elif evt_type == "set_scheduling":
                             candidate = str(data.get("scheduling", "")).upper()
                             if candidate in VALID_SCHEDULING:
