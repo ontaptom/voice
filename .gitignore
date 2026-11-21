@@ -18,6 +18,7 @@ venv/
 
 # Local experiments & notes
 experiments/
+stevie*
 
 # OS & editor files
 .DS_Store
